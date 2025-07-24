@@ -4,7 +4,6 @@ export function getSiteURL(): string {
     process.env.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
     'http://localhost:8002/';
 
-    console.log(url, "-------------------")
   // Make sure to include `https://` when not localhost.
   url = url.includes('http') ? url : `https://${url}`;
   // Make sure to include a trailing `/`.
@@ -12,7 +11,7 @@ export function getSiteURL(): string {
   return url;
 }
 
-export function getBESiteURL(): string {
+export function getBeSiteURL(): string {
   let url = `https://localhost:3003/api/v1/`;
   // let url = `https://api.bellybasketstore.in/api/v1/`;
   // Make sure to include `https://` when not localhost.

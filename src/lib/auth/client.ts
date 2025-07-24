@@ -66,14 +66,11 @@ class AuthClient {
     }
     // Make API request
     const response = await axios.post<ApiResponse>('http://localhost:3003/api/v1/auth/loginAsAdmin', data);
-    console.log(response.data, "------------------------")
-    
-    let token = response.data.token;
-    console.log(token, "---------------")
+    const token = response.data.access_token;
 
     if (token) {
       localStorage.setItem('custom-auth-token', token);
-      return response;
+      return {};
     }
     return { error: 'Invalid credentials' };
   }

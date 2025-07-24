@@ -21,10 +21,9 @@ import { z as zod } from 'zod';
 import { notification } from 'antd'; // Import Ant Design notification
 
 import { paths } from '@/paths';
-import { authClient } from '@/lib/auth/client';
-import { useUser } from '@/hooks/use-user';
-import { getBESiteURL } from '@/lib/get-site-url';
-import { SignIn } from '@phosphor-icons/react';
+// import { authClient } from '@/lib/auth/client';
+// import { useUser } from '@/hooks/use-user';
+
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string().min(1, { message: 'Password is required' }),
@@ -35,14 +34,14 @@ type Values = zod.infer<typeof schema>;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
-  const { checkSession } = useUser();
+  // const { checkSession } = useUser();
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
   const {
     control,
     handleSubmit,
-    setError,
+    // setError,
     formState: { errors },
   } = useForm<Values>({ resolver: zodResolver(schema) });
 
@@ -55,18 +54,10 @@ export function SignInForm(): React.JSX.Element {
     });
   };
 
-  
-// alert(getBESiteURL)
-
   const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
+    async (): Promise<void> => {
       setIsPending(true); // Start loading when submission starts
-
-      console.log(values, "---------------")
-
-      const error = await authClient.signInWithPassword(values);
-
-      console.log(error, "--------------------")
+      // const error = await authClient.signInWithPassword(values);
       // if (error) {
       //   setError('root', { type: 'server', message: error });
       //   setIsPending(false); // Reset loading state if there's an error
