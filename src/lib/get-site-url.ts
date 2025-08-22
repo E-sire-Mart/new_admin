@@ -12,8 +12,14 @@ export function getSiteURL(): string {
 }
 
 export function getBeSiteURL(): string {
-  let url = `https://localhost:3003/api/v1/`;
-  // let url = `https://api.bellybasketstore.in/api/v1/`;
+  // Determine the base URL based on environment
+  let url;
+  if (process.env.NODE_ENV === 'development') {
+    url = `http://localhost:3003/api/v1/`; // Development
+  } else {
+    url = `https://e-siremart.com/api/v1/`; // Production - use new domain
+  }
+  
   // Make sure to include `https://` when not localhost.
   url = url.includes('http') ? url : `https://${url}`;
   // Make sure to include a trailing `/`.
