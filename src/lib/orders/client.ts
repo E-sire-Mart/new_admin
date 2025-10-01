@@ -3,19 +3,11 @@ import apiClient from '../api-client';
 export class OrdersClient {
   async getOrderCounts(): Promise<number> {
     try {
-      const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        throw new Error('No auth token found');
-      }
-      const response = await apiClient.get<{ counts: number }>('/orders/counts', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      //   console.log('response', response);
+      const response = await apiClient.get<{ counts: number }>('/orders/counts');
       return response.data.counts;
     } catch (error) {
-      throw new Error('Failed to fetch customer count');
+      console.error('Failed to fetch orders count:', error);
+      throw new Error('Failed to fetch orders count');
     }
   }
 }

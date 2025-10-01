@@ -27,12 +27,13 @@ const schema = zod.object({
   lastName: zod.string().min(1, { message: 'Last name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
+  phone_number: zod.string().optional(),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
+const defaultValues = { firstName: '', lastName: '', email: '', password: '', phone_number: '', terms: false } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const router = useRouter();
@@ -52,23 +53,51 @@ export function SignUpForm(): React.JSX.Element {
     async (values: Values): Promise<void> => {
       setIsPending(true);
 
-      const { error } = await authClient.signUp(values);
+      const result = await authClient.signUp(values);
 
-      if (error) {
-        setError('root', { type: 'server', message: error });
+      if (result.error) {
+        setError('root', { type: 'server', message: result.error });
         setIsPending(false);
         return;
       }
 
-      // Refresh the auth state
-      await checkSession?.();
-
-      // Redirect to dashboard after successful registration
-      router.push(paths.dashboard.overview);
-      // Optionally, you can show a notification here if you want
-      // router.refresh(); // Only needed if you want to refresh the current route
+      if (result.success) {
+        if (result.token) {
+          // User is already verified and has a token - redirect to dashboard
+          await checkSession?.();
+          router.push(paths.dashboard.overview);
+        } else if (result.needsVerification) {
+          // Since you mentioned you're already verified, let's try to auto-login
+          try {
+            const loginResult = await authClient.signInWithPassword({
+              email: values.email,
+              password: values.password
+            });
+            
+            if (!loginResult.error) {
+              // Auto-login successful - redirect to dashboard
+              await checkSession?.();
+              router.push(paths.dashboard.overview);
+            } else {
+              // Show verification message as fallback
+              setError('root', { 
+                type: 'server', 
+                message: 'Registration successful! Please check your email for verification before signing in.' 
+              });
+              setIsPending(false);
+            }
+          } catch (loginError) {
+            // Show verification message as fallback
+            setError('root', { 
+              type: 'server', 
+              message: 'Registration successful! Please check your email for verification before signing in.' 
+            });
+            setIsPending(false);
+          }
+        }
+      }
     },
-    [checkSession, router, setError]
+    [setError, checkSession, router]
   );
 
   return (
@@ -99,10 +128,10 @@ export function SignUpForm(): React.JSX.Element {
             control={control}
             name="lastName"
             render={({ field }) => (
-              <FormControl error={Boolean(errors.firstName)}>
+              <FormControl error={Boolean(errors.lastName)}>
                 <InputLabel>Last name</InputLabel>
                 <OutlinedInput {...field} label="Last name" />
-                {errors.firstName ? <FormHelperText>{errors.firstName.message}</FormHelperText> : null}
+                {errors.lastName ? <FormHelperText>{errors.lastName.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
@@ -130,6 +159,17 @@ export function SignUpForm(): React.JSX.Element {
           />
           <Controller
             control={control}
+            name="phone_number"
+            render={({ field }) => (
+              <FormControl error={Boolean(errors.phone_number)}>
+                <InputLabel>Phone Number (Optional)</InputLabel>
+                <OutlinedInput {...field} label="Phone Number (Optional)" type="tel" />
+                {errors.phone_number ? <FormHelperText>{errors.phone_number.message}</FormHelperText> : null}
+              </FormControl>
+            )}
+          />
+          <Controller
+            control={control}
             name="terms"
             render={({ field }) => (
               <div>
@@ -145,13 +185,24 @@ export function SignUpForm(): React.JSX.Element {
               </div>
             )}
           />
-          {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
+          {errors.root ? (
+            <Alert color={errors.root.message?.includes('successful') ? 'success' : 'error'}>
+              {errors.root.message}
+              {errors.root.message?.includes('successful') && (
+                <div style={{ marginTop: '8px' }}>
+                  <Link component={RouterLink} href={paths.auth.signIn} underline="hover" variant="subtitle2">
+                    Go to Sign In
+                  </Link>
+                </div>
+              )}
+            </Alert>
+          ) : null}
           <Button disabled={isPending} type="submit" variant="contained">
             Sign up
           </Button>
         </Stack>
       </form>
-      <Alert color="warning">Created users are not persisted</Alert>
+      {/* <Alert color="warning">Created users are not persisted</Alert> */}
     </Stack>
   );
 }

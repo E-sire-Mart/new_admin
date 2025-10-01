@@ -21,9 +21,10 @@ import { z as zod } from 'zod';
 import { notification } from 'antd'; // Import Ant Design notification
 
 import { paths } from '@/paths';
-// import { authClient } from '@/lib/auth/client';
-// import { useUser } from '@/hooks/use-user';
-
+import { authClient } from '@/lib/auth/client';
+import { useUser } from '@/hooks/use-user';
+import { getBESiteURL } from '@/lib/get-site-url';
+import { SignIn } from '@phosphor-icons/react';
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string().min(1, { message: 'Password is required' }),
@@ -34,14 +35,14 @@ type Values = zod.infer<typeof schema>;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
-  // const { checkSession } = useUser();
+  const { checkSession } = useUser();
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
   const {
     control,
     handleSubmit,
-    // setError,
+    setError,
     formState: { errors },
   } = useForm<Values>({ resolver: zodResolver(schema) });
 
@@ -54,26 +55,33 @@ export function SignInForm(): React.JSX.Element {
     });
   };
 
+  
+// alert(getBESiteURL)
+
   const onSubmit = React.useCallback(
-    async (): Promise<void> => {
+    async (values: Values): Promise<void> => {
       setIsPending(true); // Start loading when submission starts
-      // const error = await authClient.signInWithPassword(values);
-      // if (error) {
-      //   setError('root', { type: 'server', message: error });
-      //   setIsPending(false); // Reset loading state if there's an error
-      //   return;
-      // }
+
+      console.log(values, "---------------")
+
+      const result = await authClient.signInWithPassword(values);
+
+      console.log(result, "--------------------")
+      if (result.error) {
+        setError('root', { type: 'server', message: result.error });
+        setIsPending(false); // Reset loading state if there's an error
+        return;
+      }
 
       // Show the success notification
       showSuccessNotification();
 
       // Check session and refresh page
-      // await checkSession?.();
-      // router.refresh();
-       router.push(paths.dashboard.overview);
+      await checkSession?.();
+      router.refresh();
+      router.push(paths.dashboard.overview);
     },
-    // [checkSession, router, setError]
-    [router]
+    [checkSession, router, setError]
   );
 
   return (

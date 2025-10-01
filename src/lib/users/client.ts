@@ -54,19 +54,11 @@ export class UsersClient {
 
   async getCustomerCount(): Promise<number> {
     try {
-      const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        throw new Error('No auth token found');
-        // return { data: null }
-      }
-      const response = await apiClient.get<{ counts: number }>('/users/counts', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-
-      });
+      const response = await apiClient.get<{ counts: number }>('/users/counts');
       return response.data.counts;
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to fetch customer count:', error);
       throw new Error('Failed to fetch customer count');
     }
   }
@@ -117,7 +109,7 @@ export class UsersClient {
       }
 
       // Use the DeliveryManResponse interface as the generic type for apiClient.get
-      const response = await apiClient.get<DeliveryManResponse>('/users/deliverymans', {
+      const response = await apiClient.get<DeliveryManResponse>('/users/getDeliveryPeople', {
         params: {
           page,
           limit: rowsPerPage,

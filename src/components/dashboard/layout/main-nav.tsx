@@ -11,14 +11,18 @@ import { Bell as BellIcon } from '@phosphor-icons/react/dist/ssr/Bell';
 import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
+import { Sun as SunIcon } from '@phosphor-icons/react/dist/ssr/Sun';
+import { Moon as MoonIcon } from '@phosphor-icons/react/dist/ssr/Moon';
 
 import { usePopover } from '@/hooks/use-popover';
+import { useTheme } from '@/contexts/ThemeContext';
 
 import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
 
 export function MainNav(): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+  const { mode, toggleTheme } = useTheme();
 
   const userPopover = usePopover<HTMLDivElement>();
 
@@ -66,6 +70,11 @@ export function MainNav(): React.JSX.Element {
                   <BellIcon />
                 </IconButton>
               </Badge>
+            </Tooltip>
+            <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+              <IconButton onClick={toggleTheme}>
+                {mode === 'light' ? <MoonIcon /> : <SunIcon />}
+              </IconButton>
             </Tooltip>
             <Avatar
               onClick={userPopover.handleOpen}

@@ -22,7 +22,8 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
       return;
     }
 
-    if (error) {
+    // Only show errors if they are actual errors, not just "user not logged in"
+    if (error && error !== 'Something went wrong') {
       setIsChecking(false);
       return;
     }
@@ -47,7 +48,8 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
     return null;
   }
 
-  if (error) {
+  // Only show errors if they are actual errors, not just "user not logged in"
+  if (error && error !== 'Something went wrong') {
     return <Alert color="error">{error}</Alert>;
   }
 

@@ -64,9 +64,10 @@ export function ShopTable({
   // Modified to accept the shopId
   const handleAdminLogin = (shopId: string): void => {
     const token = localStorage.getItem('custom-auth-token');
+    const base = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || '';
     const url = token
-      ? `https://shop.e-SireMart.in/auth/login?token=${encodeURIComponent(token)}&shopId=${shopId}`
-      : `https://shop.e-SireMart.in/auth/login?shopId=${shopId}`;
+      ? `${base}/auth/login?token=${encodeURIComponent(token)}&shopId=${shopId}`
+      : `${base}/auth/login?shopId=${shopId}`;
 
     window.open(url, '_blank', 'noopener,noreferrer');
   };

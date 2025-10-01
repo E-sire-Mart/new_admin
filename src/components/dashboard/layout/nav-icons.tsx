@@ -1,4 +1,4 @@
-import { Motorcycle, UserList } from '@phosphor-icons/react';
+import { Motorcycle, UserList, ChatText, ChatsCircle, ChatCircleDots, ChatDots } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react/dist/lib/types';
 import { ChartPie as ChartPieIcon } from '@phosphor-icons/react/dist/ssr/ChartPie';
 import { GearSix as GearSixIcon } from '@phosphor-icons/react/dist/ssr/GearSix';
@@ -7,6 +7,7 @@ import { Storefront as StoreFront } from '@phosphor-icons/react/dist/ssr/Storefr
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { XSquare } from '@phosphor-icons/react/dist/ssr/XSquare';
+import { FolderSimple as FolderSimpleIcon } from '@phosphor-icons/react/dist/ssr/FolderSimple';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
@@ -18,4 +19,9 @@ export const navIcons = {
   shops: StoreFront,
   shopAdmins: UserList,
   deliveryMan: Motorcycle,
+  'chat-text': ChatText,
+  'chats-circle': ChatsCircle,
+  'chat-circle-dots': ChatCircleDots,
+  'chat-dots': ChatDots,
+  category: FolderSimpleIcon,
 } as Record<string, Icon>;

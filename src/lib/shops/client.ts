@@ -49,19 +49,12 @@ export class ShopClient {
   }
   async getShopsCounts(): Promise<number> {
     try {
-      const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        throw new Error('No auth token found');
-      }
-      const response = await apiClient.get<{ counts: number }>('/shop/counts', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      // console.log('response', response);
+      const response = await apiClient.get<{ counts: number }>('/shops/counts');
       return response.data.counts;
     } catch (error) {
-      throw new Error('Failed to fetch customer count');
+      // eslint-disable-next-line no-console
+      console.error('Failed to fetch shops count:', error);
+      throw new Error('Failed to fetch shops count');
     }
   }
   async getUniversities(

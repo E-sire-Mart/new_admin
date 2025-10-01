@@ -20,17 +20,12 @@ import { CheckFat, Trash as TrashIcon } from '@phosphor-icons/react';
 import { notification } from 'antd';
 
 import type { DeliveryMan } from '@/types/delivery';
-import type { Shop } from '@/types/shop'; // Added type imports
+
 import { usersClient } from '@/lib/users/client';
 import { CustomersFilters } from '@/components/dashboard/deliveryMans/customers-filters';
 import { CustomersTable } from '@/components/dashboard/deliveryMans/customers-table';
 
-import axiosInstance from '../../../../utils/axiosInstance';
 
-interface ShopResponse {
-  data: Shop[];
-  total: number;
-}
 
 export default function Page(): React.JSX.Element {
   const [deliveryMen, setDeliveryMen] = useState<DeliveryMan[]>([]);
@@ -41,7 +36,6 @@ export default function Page(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [selectedDeliveryIds, setSelectedDeliveryIds] = useState<Set<string>>(new Set());
 
-  const [shops, setShops] = useState<Shop[]>([]);
   const [shopModalOpen, setShopModalOpen] = useState(false);
   const [selectedShop, setSelectedShop] = useState('');
 
@@ -59,40 +53,11 @@ export default function Page(): React.JSX.Element {
     }
   };
 
-  const fetchAllShops = async (): Promise<void> => {
-    try {
-      const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        notification.error({
-          message: 'Authentication Error',
-          description: 'No authentication token found. Please log in again.',
-          placement: 'topRight',
-        });
-        return;
-      }
 
-      const response = await axiosInstance.get<ShopResponse>('/api/v1/shop/admin', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setShops(response.data.data);
-    } catch (err) {
-      // Show notification instead of console.error
-      notification.error({
-        message: 'Fetch Error',
-        description: 'There was an error fetching shops. Please try again later.',
-        placement: 'topRight',
-        duration: 3,
-      });
-    }
-  };
 
   // Use useEffect to fetch data when dependencies change
   useEffect(() => {
     void fetchDeliveryMen();
-    void fetchAllShops();
   }, [page, rowsPerPage, searchQuery]);
 
   const handleDelete = async (): Promise<void> => {
@@ -198,11 +163,9 @@ export default function Page(): React.JSX.Element {
           <FormControl fullWidth>
             <InputLabel id="shop-select-label">Shop Name</InputLabel>
             <Select labelId="shop-select-label" value={selectedShop} onChange={handleShopChange} label="Shop Name">
-              {shops.map((shop) => (
-                <MenuItem key={shop._id} value={shop.name}>
-                  {shop.name}
-                </MenuItem>
-              ))}
+              <MenuItem value="shop1">Shop 1</MenuItem>
+              <MenuItem value="shop2">Shop 2</MenuItem>
+              <MenuItem value="shop3">Shop 3</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>

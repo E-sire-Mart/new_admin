@@ -31,21 +31,24 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
       const { data, error } = await authClient.getUser();
       if (error) {
         logger.error(error);
-        setState((prev) => ({ ...prev, user: null, error: 'Something went wrong', isLoading: false }));
+        // Don't set error state if user is not logged in - this is expected behavior
+        setState((prev) => ({ ...prev, user: null, error: null, isLoading: false }));
         return;
       }
 
       setState((prev) => ({ ...prev, user: data ?? null, error: null, isLoading: false }));
     } catch (err) {
       logger.error(err);
-      setState((prev) => ({ ...prev, user: null, error: 'Something went wrong', isLoading: false }));
+      // Don't set error state if user is not logged in - this is expected behavior
+      setState((prev) => ({ ...prev, user: null, error: null, isLoading: false }));
     }
   }, []);
 
   React.useEffect(() => {
     checkSession().catch((err: unknown) => {
       logger.error(err);
-      // noop
+      // Don't set error state if user is not logged in - this is expected behavior
+      setState((prev) => ({ ...prev, user: null, error: null, isLoading: false }));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
   }, []);

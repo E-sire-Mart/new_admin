@@ -1,12 +1,9 @@
-import type { Components } from '@mui/material/styles';
-import { tableCellClasses } from '@mui/material/TableCell';
-
-import type { Theme } from '../types';
+import type { Components, Theme } from '@mui/material/styles';
 
 export const MuiTableHead = {
   styleOverrides: {
     root: {
-      [`& .${tableCellClasses.root}`]: {
+      '& .MuiTableCell-root': {
         backgroundColor: 'var(--mui-palette-background-level1)',
         color: 'var(--mui-palette-text-secondary)',
         lineHeight: 1,

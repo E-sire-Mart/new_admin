@@ -18,6 +18,8 @@
   --icon-fontSize-sm: 1rem;
   --icon-fontSize-md: 1.25rem;
   --icon-fontSize-lg: 1.5rem;
+  --SideNav-width: 280px;
+  --SideNav-zIndex: 1000;
 }
 
 *:focus-visible {
@@ -26,8 +28,76 @@
 
 html {
   height: 100%;
+  box-sizing: border-box;
 }
 
 body {
   height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F9FAFC;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+/* Ensure proper layout for dashboard */
+#__next {
+  height: 100%;
+}
+
+/* Fix for Material-UI components */
+.MuiBox-root {
+  box-sizing: border-box;
+}
+
+.MuiContainer-root {
+  box-sizing: border-box;
+}
+
+/* Ensure proper sidebar positioning */
+.MuiDrawer-root {
+  z-index: var(--SideNav-zIndex);
+}
+
+/* Fix for table layouts */
+.MuiTableContainer-root {
+  overflow-x: auto;
+}
+
+/* Ensure proper card styling */
+.MuiCard-root {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+}
+
+/* Fix for navigation items */
+.MuiListItem-root {
+  border-radius: 8px;
+  margin: 2px 8px;
+}
+
+/* Ensure proper button styling */
+.MuiButton-root {
+  text-transform: none;
+  font-weight: 500;
+}
+
+/* Fix for form controls */
+.MuiFormControl-root {
+  width: 100%;
+}
+
+/* Ensure proper spacing */
+.MuiStack-root {
+  gap: 16px;
+}
+
+/* Fix for grid layouts */
+.MuiGrid-root {
+  box-sizing: border-box;
 }

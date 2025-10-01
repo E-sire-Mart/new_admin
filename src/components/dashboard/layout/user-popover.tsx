@@ -16,6 +16,7 @@ import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
+import { notification } from 'antd';
 
 export interface UserPopoverProps {
   anchorEl: Element | null;
@@ -36,6 +37,14 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
         logger.error('Sign out error', error);
         return;
       }
+
+      // Show success notification
+      notification.success({
+        message: 'Logout Successful',
+        description: 'You have been successfully logged out.',
+        placement: 'topRight',
+        duration: 3,
+      });
 
       // Refresh the auth state
       await checkSession?.();

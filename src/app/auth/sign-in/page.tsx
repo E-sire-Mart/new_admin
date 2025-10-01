@@ -8,6 +8,8 @@ import { SignInForm } from '@/components/auth/sign-in-form';
 
 export const metadata = { title: `Sign in | Auth | ${config.site.name}` } satisfies Metadata;
 
+console.log(metadata)
+
 export default function Page(): React.JSX.Element {
   return (
     <Layout>
