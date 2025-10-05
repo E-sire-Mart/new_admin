@@ -1,0 +1,38 @@
+name: Deploy Next.js to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main  # Change this to your main branch name
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'  # Set the Node.js version to 18
+
+    - name: Install dependencies
+      run: yarn install  # Use Yarn to install dependencies
+
+    - name: Build project
+      run: yarn build  # Build the Next.js project
+
+    - name: Deploy to Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}  # Server IP from GitHub Secrets
+        username: ${{ secrets.SSH_USER }}  # SSH user from GitHub Secrets
+        key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH private key from GitHub
+        script: |
+          cd /var/www/Admin.bellybasketstore  # Replace with the correct path on your server
+          git pull origin main  # Pull latest changes from the GitHub repository
+          yarn install  # Install any new dependencies
+          yarn build  # Build the project for production
+          pm2 restart admin_repo  # Restart the specific PM2 process
