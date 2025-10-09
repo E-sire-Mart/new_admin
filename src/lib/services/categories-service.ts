@@ -86,20 +86,15 @@ class CategoriesService {
   // Get all categories with tree structure
   async getAllCategories(): Promise<ApiResponse<Category[]>> {
     try {
-      console.log('API Client:', simpleApiClient);
-      console.log('Base URL:', simpleApiClient.defaults?.baseURL);
-      console.log('Making request to:', '/api/v1/categories');
       
       if (!simpleApiClient || !simpleApiClient.get) {
         throw new Error('API client is not properly initialized');
       }
       
       const response = await simpleApiClient.get('/api/v1/categories');
-      console.log('Response:', response);
       const normalized = normalizeCategoryArray(response.data?.data ?? []);
       return { ...response.data, data: normalized };
     } catch (error: any) {
-      console.error('Error fetching categories:', error);
       return {
         success: false,
         error: error.response?.data?.message || error.message || 'Failed to fetch categories',
@@ -114,7 +109,6 @@ class CategoriesService {
       const normalized = normalizeCategory(response.data?.data);
       return { ...response.data, data: normalized };
     } catch (error) {
-      console.error('Error fetching category:', error);
       return {
         success: false,
         error: 'Failed to fetch category',
@@ -151,7 +145,6 @@ class CategoriesService {
       const normalized = normalizeCategory(response.data?.data);
       return { ...response.data, data: normalized };
     } catch (error: any) {
-      console.error('Error creating category:', error);
       return {
         success: false,
         error: error.response?.data?.message || error.message || 'Failed to create category',
@@ -188,7 +181,6 @@ class CategoriesService {
       const normalized = normalizeCategory(response.data?.data);
       return { ...response.data, data: normalized };
     } catch (error: any) {
-      console.error('Error updating category:', error);
       return {
         success: false,
         error: error.response?.data?.message || error.message || 'Failed to update category',
@@ -202,7 +194,6 @@ class CategoriesService {
       const response = await simpleApiClient.delete(`/api/v1/categories/${id}`);
       return response.data;
     } catch (error: any) {
-      console.error('Error deleting category:', error);
       return {
         success: false,
         error: error.response?.data?.message || error.message || 'Failed to delete category',
@@ -220,7 +211,6 @@ class CategoriesService {
       const normalized = normalizeCategoryArray(response.data?.data ?? []);
       return { ...response.data, data: normalized };
     } catch (error) {
-      console.error('Error fetching categories by parent:', error);
       return {
         success: false,
         error: 'Failed to fetch categories by parent',
@@ -236,7 +226,6 @@ class CategoriesService {
       });
       return response.data;
     } catch (error) {
-      console.error('Error moving category:', error);
       return {
         success: false,
         error: 'Failed to move category',
@@ -250,7 +239,6 @@ class CategoriesService {
       const response = await simpleApiClient.patch('/api/v1/categories/reorder', { categoryIds });
       return response.data;
     } catch (error) {
-      console.error('Error reordering categories:', error);
       return {
         success: false,
         error: 'Failed to reorder categories',

@@ -103,7 +103,7 @@ export function CommentsContainer({ currentUser }: CommentsContainerProps): Reac
       setComments(mapped);
       setFilteredComments(mapped);
     } catch (e) {
-      console.warn('Failed to load comments', e);
+      throw new Error('Failed to load comments', e as Error);
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +171,7 @@ export function CommentsContainer({ currentUser }: CommentsContainerProps): Reac
         }]
       } : c));
     } catch (e) {
-      console.warn('Reply failed', e);
+      throw new Error('Reply failed', e as Error);
     }
   };
 
@@ -185,16 +185,11 @@ export function CommentsContainer({ currentUser }: CommentsContainerProps): Reac
       });
       setComments(prev => prev.map(c => c.id === commentId ? { ...c, isResolved: true } : c));
     } catch (e) {
-      console.warn('Resolve failed', e);
+      throw new Error('Resolve failed', e as Error);
     }
   };
 
   const handleRefresh = () => { fetchComments(); };
-
-  const handleNewComment = () => {
-    // In a real app, this would open a dialog to create a new comment
-    console.log('Creating new comment...');
-  };
 
   const getStats = () => {
     const total = comments.length;
@@ -236,7 +231,7 @@ export function CommentsContainer({ currentUser }: CommentsContainerProps): Reac
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={handleNewComment}
+            onClick={() => {}}
           >
             New Comment
           </Button>

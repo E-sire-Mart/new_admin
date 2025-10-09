@@ -28,8 +28,6 @@ import CategoryFormModal from '@/components/categories/CategoryFormModal';
 import DeleteCategoryModal from '@/components/categories/DeleteCategoryModal';
 
 import { categoriesService, type Category, type CreateCategoryRequest, type UpdateCategoryRequest, getCategoryId } from '@/lib/services/categories-service';
-import { mockApiResponses } from '@/lib/services/mock-categories-data';
-import { testEnvironmentVariables } from '@/lib/test-env';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -66,7 +64,6 @@ export default function CategoriesPage() {
 
   // Load categories on component mount
   useEffect(() => {
-    testEnvironmentVariables();
     loadCategories();
   }, []);
 
@@ -79,10 +76,6 @@ export default function CategoriesPage() {
       const response = await categoriesService.getAllCategories();
       
       if (response.success && response.data) {
-        console.log('Categories loaded from backend:', response.data);
-        console.log('First category sample:', response.data[0]);
-        console.log('Category ID field:', response.data[0]?.id);
-        console.log('Category _id field:', response.data[0]?._id);
         
         setCategories(response.data);
         // Auto-expand first level categories
@@ -94,7 +87,6 @@ export default function CategoriesPage() {
         setError(response.message || response.error || 'Failed to load categories');
       }
     } catch (err) {
-      console.error('Error loading categories:', err);
       setError('Failed to load categories. Please try again.');
     } finally {
       setLoading(false);
@@ -106,19 +98,14 @@ export default function CategoriesPage() {
     try {
       setFormLoading(true);
       
-      console.log('Form submission - editingCategory:', editingCategory);
-      console.log('Form submission - editingCategory.id:', getCategoryId(editingCategory));
-      console.log('Form submission - formData:', formData);
       
       let response;
       if (editingCategory && getCategoryId(editingCategory)) {
         // Update existing category
         const categoryId = getCategoryId(editingCategory);
-        console.log('Updating category with ID:', categoryId);
         response = await categoriesService.updateCategory(categoryId, formData as UpdateCategoryRequest);
       } else {
         // Create new category
-        console.log('Creating new category');
         response = await categoriesService.createCategory(formData as CreateCategoryRequest);
       }
       
@@ -142,7 +129,6 @@ export default function CategoriesPage() {
         });
       }
     } catch (err) {
-      console.error('Error saving category:', err);
       setSnackbar({
         open: true,
         message: 'Failed to save category. Please try again.',
@@ -158,7 +144,6 @@ export default function CategoriesPage() {
     try {
       setDeleteLoading(true);
       
-      console.log('Deleting category with ID:', categoryId);
       const response = await categoriesService.deleteCategory(categoryId);
       
       if (response.success) {
@@ -180,7 +165,6 @@ export default function CategoriesPage() {
         });
       }
     } catch (err) {
-      console.error('Error deleting category:', err);
       setSnackbar({
         open: true,
         message: 'Failed to delete category. Please try again.',
@@ -193,9 +177,6 @@ export default function CategoriesPage() {
 
   // Modal handlers
   const handleOpenFormModal = (category: Category | null = null, parent: Category | null = null) => {
-    console.log('Opening form modal with category:', category);
-    console.log('Category ID:', category?.id);
-    console.log('Category object keys:', category ? Object.keys(category) : 'null');
     setEditingCategory(category);
     setParentCategory(parent);
     setFormModalOpen(true);
@@ -219,8 +200,6 @@ export default function CategoriesPage() {
 
   // Event handlers for CategoryTree
   const handleEditCategory = (category: Category) => {
-    console.log('Edit category clicked:', category);
-    console.log('Category ID (using helper):', getCategoryId(category));
     handleOpenFormModal(category);
   };
 
@@ -232,10 +211,7 @@ export default function CategoriesPage() {
     handleOpenFormModal(null, parentCategory);
   };
 
-  const handleMoveCategory = (categoryId: string, newParentId: string | null) => {
-    // Implementation for moving categories
-    console.log('Move category:', categoryId, 'to parent:', newParentId);
-  };
+
 
   const handleToggleNode = (nodeId: string, isExpanded: boolean) => {
     setExpandedNodes(prev => {
@@ -370,7 +346,10 @@ export default function CategoriesPage() {
                     onEdit={handleEditCategory}
                     onDelete={handleDeleteCategoryFromTree}
                     onAddChild={handleAddChildCategory}
-                    onMove={handleMoveCategory}
+                    onMove={(categoryId: string, newParentId: string | null) => {
+                      // TODO: Implement category move functionality
+                      console.log('Move category:', categoryId, 'to parent:', newParentId);
+                    }}
                     expanded={expandedNodes}
                     onToggle={handleToggleNode}
                   />

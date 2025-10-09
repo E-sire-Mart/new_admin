@@ -242,7 +242,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
         onDelete={onDelete}
         onAddChild={onAddChild}
         onMove={onMove}
-                  expanded={expandedNodes.includes(getCategoryId(category))}
+        expanded={expandedNodes.includes(getCategoryId(category))}
         onToggle={handleToggle}
       />
     ));

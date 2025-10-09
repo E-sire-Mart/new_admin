@@ -62,11 +62,9 @@ export function SignInForm(): React.JSX.Element {
     async (values: Values): Promise<void> => {
       setIsPending(true); // Start loading when submission starts
 
-      console.log(values, "---------------")
 
       const result = await authClient.signInWithPassword(values);
 
-      console.log(result, "--------------------")
       if (result.error) {
         setError('root', { type: 'server', message: result.error });
         setIsPending(false); // Reset loading state if there's an error

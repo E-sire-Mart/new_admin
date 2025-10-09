@@ -128,11 +128,9 @@ class AuthClient {
     try {
       // Make API request to admin login endpoint
       const response = await axios.post<ApiResponse>(`${API_URL}/api/v1/auth/admin-login`, data);
-      console.log(response.data, "------------------------")
       
       // Use access_token from the response
       let access_token = response.data.access_token;
-      console.log(access_token, "---------------")
 
       if (access_token) {
         localStorage.setItem('custom-auth-token', access_token);
@@ -154,7 +152,6 @@ class AuthClient {
       return { error: 'Invalid credentials' };
     } catch (error: unknown) {
       // eslint-disable-next-line no-console
-      console.error('Login error:', error instanceof Error ? error.message : String(error));
       const err = error as AxiosError<{ message?: string }>;
       if (err.response?.data?.message) {
         return { error: err.response.data.message };
@@ -189,7 +186,7 @@ class AuthClient {
         }
       } catch (profileError) {
         // eslint-disable-next-line no-console
-        console.log('Profile endpoint not available, using stored user data');
+        throw new Error('Profile endpoint not available, using stored user data');
       }
 
       // Fallback: Try to get stored user data first
@@ -203,7 +200,7 @@ class AuthClient {
         }
       } catch (storedDataError) {
         // eslint-disable-next-line no-console
-        console.log('No stored user data available');
+        throw new Error('No stored user data available');
       }
 
       // Last fallback: Try to decode JWT token to get user info

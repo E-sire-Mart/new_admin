@@ -43,81 +43,40 @@ class SocketService {
           }
         } catch (error) {
           // eslint-disable-next-line no-console
-          console.error('Error parsing WebSocket message:', error);
+         throw new Error(`'Error parsing WebSocket message:', ${error}`);
         }
       };
       
       this.socket.onclose = () => {
         this.handleReconnection();
       };
-      
-      this.socket.onerror = (error) => {
-        // eslint-disable-next-line no-console
-        console.error('WebSocket error:', error);
-      };
-      
+
       return true;
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Failed to connect to socket:', error);
       return false;
     }
   }
 
   private handleIncomingMessage(data: Record<string, unknown>): void {
     // eslint-disable-next-line no-console
-    console.log('Received WebSocket message:', data);
     
     const messageType = typeof (data as { type?: unknown }).type === 'string'
       ? ((data as { type?: string }).type as string)
       : 'unknown';
-
-    switch (messageType) {
-      case 'connection':
-        // eslint-disable-next-line no-console
-        console.log('Connection confirmed:', data);
-        break;
-      case 'room_joined':
-        // eslint-disable-next-line no-console
-        console.log('Joined room:', data);
-        break;
-      case 'new_message':
-        this.messageHandlers.forEach(handler => handler(data));
-        break;
-      case 'user_joined':
-        // eslint-disable-next-line no-console
-        console.log('User joined room:', data);
-        break;
-      case 'typing':
-        // eslint-disable-next-line no-console
-        console.log('Typing indicator:', data);
-        break;
-      case 'messages_read':
-        // eslint-disable-next-line no-console
-        console.log('Messages marked as read:', data);
-        break;
-      case 'error':
-        // eslint-disable-next-line no-console
-        console.error('WebSocket error:', data.message);
-        break;
-      default:
-        // eslint-disable-next-line no-console
-        console.log('Unknown message type:', data.type);
-    }
   }
 
   private handleReconnection(): void {
     if (this.reconnectAttempts < this.maxReconnectAttempts && this.userId && this.token) {
       this.reconnectAttempts++;
       // eslint-disable-next-line no-console
-      console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       
       setTimeout(() => {
         this.connect(this.userId!, this.token!);
       }, this.reconnectInterval);
     } else {
       // eslint-disable-next-line no-console
-      console.error('Max reconnection attempts reached');
+      throw new Error('Max reconnection attempts reached');
     }
   }
 
@@ -130,7 +89,6 @@ class SocketService {
     this.messageHandlers = [];
     this.statusHandlers = [];
     // eslint-disable-next-line no-console
-    console.log('Socket service disconnected');
   }
 
   // Clear all handlers without disconnecting
@@ -138,7 +96,6 @@ class SocketService {
     this.messageHandlers = [];
     this.statusHandlers = [];
     // eslint-disable-next-line no-console
-    console.log('Socket handlers cleared');
   }
 
   isConnected(): boolean {
@@ -177,7 +134,7 @@ class SocketService {
       this.socket.send(JSON.stringify(messageData));
     } else {
       // eslint-disable-next-line no-console
-      console.error('WebSocket not connected');
+      throw new Error('WebSocket not connected');
     }
   }
 
@@ -193,10 +150,9 @@ class SocketService {
       
       this.socket.send(JSON.stringify(messageData));
       // eslint-disable-next-line no-console
-      console.log('Joining chat room via WebSocket:', messageData);
     } else {
       // eslint-disable-next-line no-console
-      console.error('WebSocket not connected');
+      throw new Error('WebSocket not connected');
     }
   }
 
@@ -210,10 +166,9 @@ class SocketService {
       
       this.socket.send(JSON.stringify(messageData));
       // eslint-disable-next-line no-console
-      console.log('Marking messages as read via WebSocket:', messageData);
     } else {
       // eslint-disable-next-line no-console
-      console.error('WebSocket not connected');
+      throw new Error('WebSocket not connected');
     }
   }
 
@@ -227,10 +182,9 @@ class SocketService {
       
       this.socket.send(JSON.stringify(messageData));
       // eslint-disable-next-line no-console
-      console.log('Typing indicator sent via WebSocket:', messageData);
     } else {
       // eslint-disable-next-line no-console
-      console.error('WebSocket not connected');
+      throw new Error('WebSocket not connected');
     }
   }
 
@@ -241,13 +195,11 @@ class SocketService {
       };
       
       // eslint-disable-next-line no-console
-      console.log('Requesting available rooms via WebSocket');
       this.socket.send(JSON.stringify(messageData));
       // eslint-disable-next-line no-console
-      console.log('Available rooms request sent successfully');
     } else {
       // eslint-disable-next-line no-console
-      console.error('WebSocket not connected, cannot request available rooms');
+      throw new Error('WebSocket not connected, cannot request available rooms');
     }
   }
 }

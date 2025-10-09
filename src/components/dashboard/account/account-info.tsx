@@ -41,8 +41,10 @@ export function AccountInfo(): React.JSX.Element {
   };
 
   React.useEffect(() => {
-    void fetchProfile().then(() => {
-      //  console.log('Profile fetched successfully');
+    fetchProfile().then(() => {
+    })
+    .catch((error) => {
+      throw new Error('Failed to fetch profile', error as Error);
     });
   }, []);
 

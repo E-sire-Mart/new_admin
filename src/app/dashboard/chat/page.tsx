@@ -35,6 +35,7 @@ import {
 import { useTheme } from '@/contexts/ThemeContext';
 import socketService from '../../../services/socket-service';
 import { getBESiteURL } from '@/lib/get-site-url';
+import { error } from 'node:console';
 
 interface Message {
   id: string;
@@ -107,10 +108,10 @@ const AdminChatPage: React.FC = () => {
       if (data) {
         try {
           const parsed = JSON.parse(data);
-          console.log(`Found user data in localStorage key '${key}':`, parsed);
+          
           return parsed;
       } catch (e) {
-          console.warn(`Failed to parse data from localStorage key '${key}':`, e);
+          throw new Error(`Failed to parse data from localStorage key '${key}':`, e as Error);
         }
       }
     }
@@ -120,7 +121,6 @@ const AdminChatPage: React.FC = () => {
     if (token) {
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        console.log('Constructing user data from token:', tokenPayload);
         return {
           access_token: token,
           userId: tokenPayload.userId,
@@ -130,11 +130,10 @@ const AdminChatPage: React.FC = () => {
           isAdmin: tokenPayload.isAdmin
         };
       } catch (e) {
-        console.warn('Failed to decode token for user data construction:', e);
+        throw Error('Failed to decode token for user data construction:', e as Error);
       }
     }
     
-    console.warn('No user data found in localStorage');
     return null;
   };
 
@@ -144,7 +143,6 @@ const AdminChatPage: React.FC = () => {
       const tokenPayload = JSON.parse(atob(token.split('.')[1]));
       return tokenPayload.userId;
     } catch (e) {
-      console.warn('Failed to decode JWT token');
       return null;
     }
   };
@@ -217,7 +215,6 @@ const AdminChatPage: React.FC = () => {
 
         setContacts(mappedContacts);
       } catch (error) {
-        console.error('Failed to fetch users:', error);
         setContacts([]);
       } finally {
         setLoading(false);
@@ -254,123 +251,30 @@ const AdminChatPage: React.FC = () => {
         if (!token) {
           // Try to get token from custom-auth-token storage
           token = localStorage.getItem('custom-auth-token');
-          console.log('Using token from custom-auth-token storage:', token ? 'Found' : 'Not found');
         }
         
         if (token) {
-          console.log('Connecting socket with token for user:', userId);
           // Clear any existing handlers first
           socketService.clearHandlers();
           const connected = socketService.connect(userId, token);
-          console.log('Socket connection result:', connected);
           
           // Wait a moment for connection to establish
           setTimeout(() => {
-            console.log('Socket connection status:', socketService.isConnected());
           }, 1000);
         
-          // Set up basic socket connection with global message handlers
-          console.log('Socket connected, setting up global message handlers');
           
-          // Set up global message handlers (for all messages)
-          console.log('Setting up message handler...');
           const unsubscribeMessage = socketService.onMessage((data) => {
             const evt = data as SocketMessage;
-            console.log('Admin dashboard received message:', evt);
             
           if (evt.type === 'new_message' && evt.message) {
-              console.log('=== NEW MESSAGE DEBUG ===');
-              console.log('Message data:', evt.message);
-              console.log('Current room ID:', currentRoomId);
-              console.log('Message room ID:', evt.message.roomId);
-              console.log('Selected contact ID:', selectedContact?.id);
-              console.log('Message sender ID:', evt.message.senderId);
-              console.log('Current user ID:', currentUserId);
-              console.log('All contacts:', contacts.map(c => ({ id: c.id, name: c.name })));
               
               // Process ALL messages to ensure sync works
               let shouldProcessMessage = true;
               let processReason = 'process_all';
-              console.log('🔄 PROCESSING ALL MESSAGES FOR SYNC');
               
-              // Original logic (commented out for now)
-              /*
-              let shouldProcessMessage = false;
-              let processReason = '';
               
-              // Always process messages from the current user (admin) if we have a selected contact
-              if (data.message.senderId === currentUserId && selectedContact) {
-                console.log('✅ Message is from current user (admin), processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'current_user_message';
-              }
-              // Only process messages for the current chat room or from the selected contact
-              else if (currentRoomId && data.message.roomId === currentRoomId) {
-                console.log('✅ Message belongs to current room, processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'room_id_match';
-              } else if (selectedContact && data.message.senderId === selectedContact.id) {
-                console.log('✅ Message is from currently selected contact, processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'selected_contact_match';
-              } else if (currentUserId && data.message.roomId && data.message.roomId.includes(currentUserId)) {
-                console.log('✅ Message room ID contains current user ID, processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'room_contains_user';
-              } else {
-                // Final fallback: check if sender is in our contacts list
-                const senderContact = contacts.find(c => c.id === data.message.senderId);
-                if (senderContact) {
-                  console.log('✅ Message sender found in contacts, processing for display...');
-                  shouldProcessMessage = true;
-                  processReason = 'sender_in_contacts';
-                } else {
-                  // TEMPORARY: Force process all messages for debugging
-                  console.log('🔄 FORCE PROCESSING MESSAGE FOR DEBUGGING');
-                  shouldProcessMessage = true;
-                  processReason = 'force_process_debug';
-                  console.log('Current room ID:', currentRoomId);
-                  console.log('Message room ID:', data.message.roomId);
-                  console.log('Selected contact ID:', selectedContact?.id);
-                  console.log('Message sender ID:', data.message.senderId);
-                  console.log('Available contacts:', contacts.map(c => c.id));
-                }
-              }
-              */
-              
-              // Original logic (commented out for testing)
-              /*
-              let shouldProcessMessage = false;
-              let processReason = '';
-              
-              if (currentRoomId && data.message.roomId === currentRoomId) {
-                console.log('✅ Message belongs to current room, processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'room_id_match';
-              } else if (selectedContact && data.message.senderId === selectedContact.id) {
-                console.log('✅ Message is from currently selected contact, processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'selected_contact_match';
-              } else if (currentUserId && data.message.roomId && data.message.roomId.includes(currentUserId)) {
-                console.log('✅ Message room ID contains current user ID, processing for display...');
-                shouldProcessMessage = true;
-                processReason = 'room_contains_user';
-              } else {
-                // Final fallback: check if sender is in our contacts list
-                const senderContact = contacts.find(c => c.id === data.message.senderId);
-                if (senderContact) {
-                  console.log('✅ Message sender found in contacts, processing for display...');
-                  shouldProcessMessage = true;
-                  processReason = 'sender_in_contacts';
-                } else {
-                  console.log('❌ Message does not match any criteria, ignoring for display');
-                  console.log('Available contacts:', contacts.map(c => c.id));
-                }
-              }
-              */
               
               if (shouldProcessMessage) {
-                console.log(`🔄 Processing message with reason: ${processReason}`);
                 
                 // Create message object with proper sender identification
                 const newMsg: Message = {
@@ -381,14 +285,8 @@ const AdminChatPage: React.FC = () => {
                   status: evt.message.status
                 };
                 
-                console.log('Created message object:', newMsg);
-                console.log('Message sender ID:', evt.message.senderId);
-                console.log('Current user ID:', currentUserId);
-                console.log('Determined sender:', newMsg.sender);
-                console.log('Current messages count:', messages.length);
             
                 setMessages(prev => {
-                  console.log('Previous messages:', prev.map(m => ({ id: m.id, text: m.text, sender: m.sender })));
                   
                   // Enhanced duplicate detection
                   const messageExistsById = prev.some(msg => msg.id === newMsg.id);
@@ -399,12 +297,10 @@ const AdminChatPage: React.FC = () => {
                   );
                   
                   if (messageExistsById) {
-                    console.log('⚠️ Message already exists (by ID), skipping');
                     return prev;
                   }
                   
                   if (messageExistsByContentAndTime) {
-                    console.log('⚠️ Message already exists (by content and time), skipping');
                     return prev;
                   }
                   
@@ -413,20 +309,16 @@ const AdminChatPage: React.FC = () => {
                     prev.some(msg => msg.text === newMsg.text && msg.sender === 'admin' && msg.id.startsWith('local_'));
                   
                   if (isOwnMessage) {
-                    console.log('🔄 Replacing local message with server message');
                     // Replace the local message with the server message (to get proper ID and status)
                     const updated = prev.map(msg => 
                       (msg.text === newMsg.text && msg.sender === 'admin' && msg.id.startsWith('local_')) 
                         ? newMsg 
                         : msg
                     );
-                    console.log('Updated messages after replacement:', updated.map(m => ({ id: m.id, text: m.text, sender: m.sender })));
                     return updated;
                   } else {
                     // This is a message from someone else, add it normally
-                    console.log('➕ Adding new message from other user');
                     const updated = [...prev, newMsg];
-                    console.log('Updated messages after addition:', updated.map(m => ({ id: m.id, text: m.text, sender: m.sender })));
                     return updated;
                   }
                 });
@@ -434,7 +326,7 @@ const AdminChatPage: React.FC = () => {
             // Scroll to bottom when new message arrives
             setTimeout(() => scrollToBottom(), 100);
               } else {
-                console.log('❌ Message not processed - shouldProcessMessage is false');
+                Error('❌ Message not processed - shouldProcessMessage is false');
               }
               
               // Update contact's last message regardless of room (for contact list updates)
@@ -475,7 +367,6 @@ const AdminChatPage: React.FC = () => {
                 }
               }
             } else if (evt.type === 'typing') {
-              console.log('Typing indicator received:', evt);
               // Handle typing indicator
               if (evt.userId !== userId) {
                 setContacts(prevContacts => 
@@ -491,7 +382,6 @@ const AdminChatPage: React.FC = () => {
                 );
               }
             } else if (evt.type === 'user_online') {
-              console.log('User online notification:', evt);
               // Update contact online status
               setContacts(prevContacts => 
                 prevContacts.map(contact => {
@@ -506,7 +396,6 @@ const AdminChatPage: React.FC = () => {
                 })
               );
             } else if (evt.type === 'user_offline') {
-              console.log('User offline notification:', evt);
               // Update contact online status
               setContacts(prevContacts => 
                 prevContacts.map(contact => {
@@ -521,12 +410,10 @@ const AdminChatPage: React.FC = () => {
                 })
               );
             } else if (evt.type === 'room_available') {
-              console.log('Room availability notification received:', evt);
               
               // This notification means a new chat room has been created
               // We can use this to update contact information or prepare for future chat
               if (evt.initiator && evt.participant) {
-                console.log('New room available between:', evt.initiator.name, 'and', evt.participant.name);
                 
                 // Update contact information if needed
                 setContacts(prevContacts => {
@@ -545,15 +432,12 @@ const AdminChatPage: React.FC = () => {
                 });
               }
             } else if (evt.type === 'available_rooms_list') {
-              console.log('Received available rooms list:', evt.rooms);
               
               // This can be used to populate existing chat rooms
               // For now, we'll just log it for debugging
               if (Array.isArray(evt.rooms) && evt.rooms.length > 0) {
-                console.log(`Found ${evt.rooms.length} existing chat rooms`);
               }
             } else if (evt.type === 'online_users_list') {
-              console.log('Received online users list:', evt.users);
               // Update contacts with online status
               setContacts(prevContacts => 
                 prevContacts.map(contact => {
@@ -576,12 +460,13 @@ const AdminChatPage: React.FC = () => {
         // Set up socket status handlers for online/offline updates
         const unsubscribeStatus = socketService.onStatusChange((data) => {
           const evt = data as SocketMessage;
-          console.log('📡 Status update received:', evt);
+
           if (evt.type === 'status_update' && Array.isArray(evt.users)) {
-            console.log('🔄 Updating contacts online status:', evt.users);
+
             updateContactsOnlineStatus(evt.users as any[]);
+
           } else if (evt.type === 'user_online') {
-            console.log('🟢 User online notification:', evt);
+
             setContacts(prevContacts => 
               prevContacts.map(contact => {
                 if (contact.id === (evt.user?.id || (evt.user as { _id?: string })?._id)) {
@@ -595,7 +480,6 @@ const AdminChatPage: React.FC = () => {
               })
             );
           } else if (evt.type === 'user_offline') {
-            console.log('🔴 User offline notification:', evt);
             setContacts(prevContacts => 
               prevContacts.map(contact => {
                 if (contact.id === (evt.user?.id || (evt.user as { _id?: string })?._id)) {
@@ -612,7 +496,7 @@ const AdminChatPage: React.FC = () => {
         });
         
         // Mark current user as online
-        console.log('🟢 Marking current user as online...');
+
         const API_BASE = getBESiteURL();
         fetch(`${API_BASE}chat/online`, {
           method: 'POST',
@@ -623,18 +507,17 @@ const AdminChatPage: React.FC = () => {
           body: JSON.stringify({ isOnline: true })
         }).then(response => {
           if (response.ok) {
-            console.log('✅ Successfully marked user as online');
+            alert('✅ Successfully marked user as online');
           } else {
-            console.warn('⚠️ Failed to mark user as online, status:', response.status);
+            error('⚠️ Failed to mark user as online, status:', response.status);
           }
         }).catch(error => {
-          console.warn('❌ Failed to mark user as online:', error);
+          throw new Error('❌ Failed to mark user as online:', error);
         });
           
           // Request available rooms for synchronization
           setTimeout(() => {
             if (socketService.isConnected()) {
-              console.log('Requesting available rooms for admin dashboard...');
               socketService.requestAvailableRooms();
             }
           }, 1500);
@@ -645,13 +528,13 @@ const AdminChatPage: React.FC = () => {
           unsubscribeStatus();
         };
         } else {
-          console.error('No valid token found for socket connection');
+          error('No valid token found for socket connection');
         }
       } else {
-        console.error('No valid user ID found for socket connection');
+        error('No valid user ID found for socket connection');
       }
     } catch (e) {
-      console.warn('Failed to initialize socket connection');
+      throw new Error('Failed to initialize socket connection');
     }
   }, []);
 
@@ -684,10 +567,10 @@ const AdminChatPage: React.FC = () => {
             },
             body: JSON.stringify({ isOnline: false })
           }).catch(error => {
-            console.warn('Failed to mark user as offline:', error);
+            throw error('Failed to mark user as offline:', error);
           });
         } catch (e) {
-          console.warn('Failed to mark user as offline');
+          throw new Error('Failed to mark user as offline');
           }
         }
       }
@@ -712,7 +595,7 @@ const AdminChatPage: React.FC = () => {
           updateContactsOnlineStatus(users);
         }
       } catch (error) {
-        console.warn('Failed to refresh online status:', error);
+       throw new Error('Failed to refresh online status:', error as Error);
       }
     }, 30000); // Refresh every 30 seconds
 
@@ -720,7 +603,7 @@ const AdminChatPage: React.FC = () => {
   }, []);
 
   const updateContactsOnlineStatus = (users: any[]) => {
-    console.log('🔄 Updating contacts online status with users:', users);
+
     setContacts(prevContacts => 
       prevContacts.map(contact => {
         const updatedUser = users.find((u: any) => 
@@ -729,7 +612,7 @@ const AdminChatPage: React.FC = () => {
           u.userId === contact.id
         );
         if (updatedUser) {
-          console.log(`🔄 Updating contact ${contact.name} online status:`, updatedUser.isOnline);
+
           return {
             ...contact,
             isOnline: !!updatedUser.isOnline,
@@ -772,13 +655,12 @@ const AdminChatPage: React.FC = () => {
         if (!token) {
           // Try to get token from custom-auth-token storage
           token = localStorage.getItem('custom-auth-token');
-          console.log('Using token from custom-auth-token storage for API call:', token ? 'Found' : 'Not found');
+
         }
         
         if (token) {
-          console.log('Loading chat history for room:', roomId);
-          console.log('Using token for user:', parsedUser._id || parsedUser.id || parsedUser.userId);
-          
+
+
         const API_BASE = getBESiteURL();
         const response = await fetch(`${API_BASE}chat/rooms/${roomId}/messages`, {
           headers: {
@@ -787,11 +669,9 @@ const AdminChatPage: React.FC = () => {
           }
         });
           
-          console.log('Chat history response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-            console.log('Chat history data received:', data);
             
             if (data.success && data.data && data.data.messages) {
             const formattedMessages: Message[] = data.data.messages.map((msg: any) => ({
@@ -802,34 +682,29 @@ const AdminChatPage: React.FC = () => {
               status: msg.status || 'sent'
             }));
             setMessages(formattedMessages);
-              console.log('Formatted messages:', formattedMessages);
           } else {
-              console.log('No messages found in response');
             setMessages([]);
           }
         } else {
             const errorData = await response.text();
-            console.error('Failed to load chat history. Status:', response.status, 'Response:', errorData);
+            error('Failed to load chat history. Status:', response.status, 'Response:', errorData);
             
             if (response.status === 401) {
-              console.error('Authentication failed. Token might be expired or invalid.');
+              error('Authentication failed. Token might be expired or invalid.');
               // Try to refresh token or redirect to login
             } else if (response.status === 403) {
-              console.error('Access denied to this chat room. User might not be a participant.');
+              error('Access denied to this chat room. User might not be a participant.');
             }
             
           setMessages([]);
         }
         } else {
-          console.error('No valid token found for API call');
           setMessages([]);
         }
       } else {
-        console.error('No user data found');
         setMessages([]);
       }
     } catch (error) {
-      console.error('Failed to load chat history:', error);
       setMessages([]);
     } finally {
       setChatHistoryLoading(false);
@@ -841,18 +716,13 @@ const AdminChatPage: React.FC = () => {
   };
 
   const handleContactSelect = async (contact: ChatContact) => {
-    console.log('Selecting contact:', contact);
-    console.log('Current user ID:', currentUserId);
-    console.log('Contact ID:', contact.id);
     
     setSelectedContact(contact);
     const roomId = [currentUserId, contact.id].sort().join('_');
-    console.log('Created room ID:', roomId);
     setCurrentRoomId(roomId);
     
     // Join chat room via socket
     if (currentUserId) {
-      console.log('Joining chat room via socket');
       socketService.joinChatRoom(currentUserId, contact.id, contact.name);
     }
     
@@ -876,7 +746,6 @@ const AdminChatPage: React.FC = () => {
       );
       
       if (hasLocalMessage) {
-        console.log('⚠️ Local message already exists, skipping duplicate');
         return prev;
       }
 
@@ -890,19 +759,13 @@ const AdminChatPage: React.FC = () => {
         status: 'sent'
       };
 
-      console.log('➕ Adding local message:', localMessage);
       return [...prev, localMessage];
     });
     
     setTimeout(() => scrollToBottom(), 100);
 
     // Send message via socket
-    console.log('📤 Sending message via socket:', {
-      currentUserId,
-      selectedContactId: selectedContact.id,
-      messageText,
-      currentRoomId
-    });
+
     socketService.sendMessage(currentUserId, selectedContact.id, messageText, currentRoomId);
   };
 
@@ -942,10 +805,7 @@ const AdminChatPage: React.FC = () => {
 
   // Monitor messages state changes
   useEffect(() => {
-    console.log('🔄 Messages state updated:', messages.length, 'messages');
-    if (messages.length > 0) {
-      console.log('Latest messages:', messages.slice(-3).map(m => ({ id: m.id, text: m.text, sender: m.sender })));
-    }
+
   }, [messages]);
 
   const getStatusIcon = (status: string) => {
@@ -1021,7 +881,6 @@ const AdminChatPage: React.FC = () => {
   };
 
   const handleEmojiClick = (emoji: string) => {
-    console.log('🎯 Emoji clicked:', emoji);
     setNewMessage(prev => prev + emoji);
     setEmojiPickerOpen(false);
   };
@@ -1060,12 +919,6 @@ const AdminChatPage: React.FC = () => {
             variant="outlined" 
             size="small"
             onClick={() => {
-              console.log('🔍 Debug Info:');
-              console.log('Socket connected:', socketService.isConnected());
-              console.log('Current user ID:', currentUserId);
-              console.log('Selected contact:', selectedContact);
-              console.log('Current messages:', messages.length);
-              console.log('Current room ID:', currentRoomId);
               
               // Test: Add a message directly to see if rendering works
               if (selectedContact) {
@@ -1077,7 +930,6 @@ const AdminChatPage: React.FC = () => {
                   status: 'sent'
                 };
                 setMessages(prev => [...prev, testMessage]);
-                console.log('✅ Added test message directly');
               }
             }}
           >
@@ -1088,15 +940,11 @@ const AdminChatPage: React.FC = () => {
             size="small"
             onClick={() => {
               if (selectedContact && currentUserId && currentRoomId) {
-                console.log('🧪 Testing message sync...');
-                console.log('Sending test message to:', selectedContact.name);
-                console.log('Room ID:', currentRoomId);
                 
                 // Send a test message
                 socketService.sendMessage(currentUserId, selectedContact.id, `Test sync message ${Date.now()}`, currentRoomId);
-                console.log('✅ Test message sent via socket');
               } else {
-                console.log('❌ Cannot test: missing contact, user ID, or room ID');
+                throw new Error('❌ Cannot test: missing contact, user ID, or room ID');
               }
             }}
           >
@@ -1358,7 +1206,6 @@ const AdminChatPage: React.FC = () => {
                   </Box>
                 ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {(() => { console.log('🔄 Rendering', messages.length, 'messages'); return null; })()}
                   {messages.map((message) => (
                     <Box
                       key={message.id}
@@ -1572,7 +1419,6 @@ const AdminChatPage: React.FC = () => {
                         size="small"
                         className="emoji-button"
                         onClick={() => {
-                          console.log('🎯 Emoji button clicked, current state:', emojiPickerOpen);
                           setEmojiPickerOpen(!emojiPickerOpen);
                         }}
                       >
