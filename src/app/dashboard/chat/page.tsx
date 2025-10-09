@@ -35,7 +35,7 @@ import {
 import { useTheme } from '@/contexts/ThemeContext';
 import socketService from '../../../services/socket-service';
 import { getBESiteURL } from '@/lib/get-site-url';
-import { error } from 'node:console';
+// Removed incorrect node:console import
 
 interface Message {
   id: string;
@@ -509,7 +509,7 @@ const AdminChatPage: React.FC = () => {
           if (response.ok) {
             alert('✅ Successfully marked user as online');
           } else {
-            error('⚠️ Failed to mark user as online, status:', response.status);
+            console.error('⚠️ Failed to mark user as online, status:', response.status);
           }
         }).catch(error => {
           throw new Error('❌ Failed to mark user as online:', error);
@@ -528,10 +528,10 @@ const AdminChatPage: React.FC = () => {
           unsubscribeStatus();
         };
         } else {
-          error('No valid token found for socket connection');
+          console.error('No valid token found for socket connection');
         }
       } else {
-        error('No valid user ID found for socket connection');
+        console.error('No valid user ID found for socket connection');
       }
     } catch (e) {
       throw new Error('Failed to initialize socket connection');
@@ -567,7 +567,7 @@ const AdminChatPage: React.FC = () => {
             },
             body: JSON.stringify({ isOnline: false })
           }).catch(error => {
-            throw error('Failed to mark user as offline:', error);
+            throw new Error('Failed to mark user as offline: ' + error);
           });
         } catch (e) {
           throw new Error('Failed to mark user as offline');
@@ -687,13 +687,13 @@ const AdminChatPage: React.FC = () => {
           }
         } else {
             const errorData = await response.text();
-            error('Failed to load chat history. Status:', response.status, 'Response:', errorData);
+            console.error('Failed to load chat history. Status:', response.status, 'Response:', errorData);
             
             if (response.status === 401) {
-              error('Authentication failed. Token might be expired or invalid.');
+              console.error('Authentication failed. Token might be expired or invalid.');
               // Try to refresh token or redirect to login
             } else if (response.status === 403) {
-              error('Access denied to this chat room. User might not be a participant.');
+              console.error('Access denied to this chat room. User might not be a participant.');
             }
             
           setMessages([]);
